@@ -1,15 +1,24 @@
 package StepDefinitions;
 import java.time.Duration;
 
+import org.junit.Assert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathFactory;
+ 
 
 public class StepDefintions {
 	WebDriver driver = new ChromeDriver();
@@ -19,57 +28,59 @@ public class StepDefintions {
 		
 //		“Geckodriver” can’t be opened because the identity of the developer cannot be confirmed
 //		WebDriver driver = new FirefoxDriver();
-//		# implicitlyWait.in(10, TimeUnit.SECONDS) deprecated
-	    driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10)); 
+//		# implicitlyWait.in(10, TimeUnit.SECONDS) is deprecated
+	    driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(15	)); 
 	    String base_url = "https://americas.datasite.com";
 	    driver.get(base_url);
 	}
 
-	@When("user enters invalid credentials")
-	public void enterInvalidCredentials() {
-		WebElement username = driver.findElement(By.id("username")); 
-		WebElement password = driver.findElement(By.id("password"));
-		username.sendKeys("bademail@bad.com");
-		password.sendKeys("badPASS");		
+	@When("user enters invalid username (.*) and password (.*)$")
+	public void enterInvalidCredentials(String username, String password) {
+		WebElement user = driver.findElement(By.id("username")); 
+		WebElement pass = driver.findElement(By.id("password"));
+		user.sendKeys(username);
+		pass.sendKeys(password);		
 	}
 
 	@And("^submits.*")
 	public void submitForm() {
-//		WebElement login_button = driver.findElement(By.xpath("//a[text()='LOG IN']"));
 		WebElement login_button = driver.findElement(By.cssSelector(".primary"));
 		login_button.click();
 	}
 
-//	@Then("this error message is displayed: {string}")
-	@Then("^credentials error.*")
-	public void verifyCredentialsError(){
-//		driver.findElement(By.xpath("//p[text()=\"We didn't recognize the username or password you entered. Please try again.\"]"));
-//									"//*[@id='" + recordId + "_ACTION_COLUMN']/a[2]/span"
-//									"//td[normalize-space(text())='"+newUser+"']/a"
-		//p[contains(text(),"We didn't recognize the username or password you entered. Please try again.")]
-		driver.findElement(By.xpath("//p[contains(text(),\"We didn't recognize the username or password you entered. Please try again.\")]"));
+	@Then("^the error: (.*)$")
+	public void verifyError(String error){
+		driver.findElement(By.xpath(String.format("//*[contains(text(),%s)]", error)));
+												   
 	}
 
-//	@Then("this error message is displayed: {string}")
-//	public void validatePasswordReset(String error){
-	@Then("^email address error:.*")
-	public void validatePasswordReset(){
-//		driver.findElement(By.xpath("//p[text()=\"We didn't recognize the username or password you entered. Please try again.\"]"));
-//									"//*[@id='" + recordId + "_ACTION_COLUMN']/a[2]/span"
-//									"//td[normalize-space(text())='"+newUser+"']/a"
-		//p[contains(text(),"We didn't recognize the username or password you entered. Please try again.")]
-		driver.findElement(By.xpath("//*[contains(text(),\'Error: Email address required')]"));
-	}
-
-	
     @When("user clicks forgot password link") 
     public void clickPasswordLink() {	
-    	WebElement forgot_password_link = driver.findElement(By.xpath("//a[text()='FORGOT PASSWORD?']"));
-    	forgot_password_link.click();
-    	
+    	driver.findElement(By.xpath("//a[text()='FORGOT PASSWORD?']")).click();
+    	WebDriverWait wait = new WebDriverWait(driver,Duration.ofSeconds(10));
+    	wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//jv-forgot-password-form")));	
+    }
+
+    @And("user vists Terms of Use page")
+    public void termsOfUse() {
+    	XPath xpath = XPathFactory.newInstance().newXPath();
+    	WebElement terms = driver.findElement(By.xpath("//*[text()='TERMS OF USE']"));
+    	terms.click();
     }
     
-
-
-
+    @Then("verifies the date is correct")
+    public void verifyTodaysDate() {
+    	String pattern = "MMMM, dd YYYY";
+        SimpleDateFormat readable_date = new SimpleDateFormat(pattern);
+      
+        String date = readable_date.format(new Date());
+        driver.findElement(By.xpath(String.format("//*[contains(text(),'Effective as of %s')]", date))).click();           	
+    }
+    
+    @And("^verifies supported language (.*)$")
+    public void verifyLanguage (String lang) {	
+    	driver.findElement(By.cssSelector("div#menuOpen")).click();
+    	driver.findElement(By.xpath("//a[@data-target='languageMenu']")).click();
+    	driver.findElement(By.xpath(String.format("//*[text()='%s']", lang)));	
+    }
 }
