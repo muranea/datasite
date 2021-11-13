@@ -1,16 +1,18 @@
 package StepDefinitions;
 import java.time.Duration;
 
+import org.junit.Assert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -27,17 +29,17 @@ public class StepDefintions {
 //		“Geckodriver” can’t be opened because the identity of the developer cannot be confirmed
 //		WebDriver driver = new FirefoxDriver();
 //		# implicitlyWait.in(10, TimeUnit.SECONDS) is deprecated
-	    driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10)); 
+	    driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(15	)); 
 	    String base_url = "https://americas.datasite.com";
 	    driver.get(base_url);
 	}
 
-	@When("user enters invalid credentials")
-	public void enterInvalidCredentials() {
-		WebElement username = driver.findElement(By.id("username")); 
-		WebElement password = driver.findElement(By.id("password"));
-		username.sendKeys("bademail@bad.com");
-		password.sendKeys("badPASS");		
+	@When("user enters invalid username (.*) and password (.*)$")
+	public void enterInvalidCredentials(String username, String password) {
+		WebElement user = driver.findElement(By.id("username")); 
+		WebElement pass = driver.findElement(By.id("password"));
+		user.sendKeys(username);
+		pass.sendKeys(password);		
 	}
 
 	@And("^submits.*")
@@ -46,24 +48,19 @@ public class StepDefintions {
 		login_button.click();
 	}
 
-	@Then("^credentials error.*")
-	public void verifyCredentialsError(){
-		driver.findElement(By.xpath("//p[contains(text(),\"We didn't recognize the username or password you entered. Please try again.\")]"));
+	@Then("^the error: (.*)$")
+	public void verifyError(String error){
+		driver.findElement(By.xpath(String.format("//*[contains(text(),%s)]", error)));
+												   
 	}
 
-	@Then("^email address error:.*")
-	public void validatePasswordReset(){
-		driver.findElement(By.xpath("//*[contains(text(),'Error: Email address required')]"));
-	}
-	
     @When("user clicks forgot password link") 
     public void clickPasswordLink() {	
-    	WebElement forgot_password_link = driver.findElement(By.xpath("//a[text()='FORGOT PASSWORD?']"));
-    	forgot_password_link.click();	
+    	driver.findElement(By.xpath("//a[text()='FORGOT PASSWORD?']")).click();
+    	WebDriverWait wait = new WebDriverWait(driver,Duration.ofSeconds(10));
+    	wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//jv-forgot-password-form")));	
     }
-    
-    
-    //Expected to fail, date does not update on webpage
+
     @And("user vists Terms of Use page")
     public void termsOfUse() {
     	XPath xpath = XPathFactory.newInstance().newXPath();
@@ -84,7 +81,6 @@ public class StepDefintions {
     public void verifyLanguage (String lang) {	
     	driver.findElement(By.cssSelector("div#menuOpen")).click();
     	driver.findElement(By.xpath("//a[@data-target='languageMenu']")).click();
-//    	driver.findElement(By.xpath(String.format("//*[text()='%s']", lang)));
-    	
+    	driver.findElement(By.xpath(String.format("//*[text()='%s']", lang)));	
     }
 }

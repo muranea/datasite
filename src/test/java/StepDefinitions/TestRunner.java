@@ -9,6 +9,7 @@ import io.cucumber.junit.CucumberOptions;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(features={"src/test/resources/Features/scenario1.feature","src/test/resources/Features/scenario2.feature","src/test/resources/Features/scenario3.feature"},
+//@CucumberOptions(features={"src/test/resources/Features/scenario2.feature"},
 glue={"StepDefinitions"}, 
 monochrome=true,
 plugin = "html:target/cucumber-report.html",

@@ -1,3 +1,7 @@
+# Author: Ander Murane
+# Date 11/13/21
+# Description: Home coding challenge
+
 @smoketest
 Feature: Terms of use and supported languages
 	  
@@ -14,7 +18,7 @@ Feature: Terms of use and supported languages
     | Español  |
     | Italiano |
   
-  # Fails because date is not updated. 
+  # Fails because date on website is not updated 
   Scenario: verify terms of use date
     Given user opens the app url and lands arrives on the login page
     And user vists Terms of Use page
